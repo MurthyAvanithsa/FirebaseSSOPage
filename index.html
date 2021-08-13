@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Bootstrap Example</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We"
+      crossorigin="anonymous"
+    />
+    <!-- Create a simple CodeMirror instance -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.62.2/codemirror.min.css"
+      integrity="sha512-xIf9AdJauwKIVtrVRZ0i4nHP61Ogx9fSRAkCLecmE2dL/U8ioWpDvFCAy4dcfecN72HHB9+7FfQj3aiO68aaaw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script
+      src="https://code.jquery.com/jquery-3.6.0.js"
+      integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase.js"></script>
+
+    <style>
+      /* Remove the navbar's default margin-bottom and rounded borders */
+      .navbar {
+        margin-bottom: 0;
+        border-radius: 0;
+      }
+
+      /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
+      .row.content {
+        /* height: 450px; */
+      }
+
+      /* Set gray background color and 100% height */
+      .sidenav {
+        padding-top: 20px;
+        background-color: #f1f1f1;
+        height: 100%;
+      }
+
+      /* Set black background color, white text and some padding */
+      footer {
+        background-color: #555;
+        color: white;
+        padding: 15px;
+      }
+
+      /* On small screens, set height to 'auto' for sidenav and grid */
+      @media screen and (max-width: 767px) {
+        .sidenav {
+          height: auto;
+          padding: 15px;
+        }
+        .row.content {
+          height: auto;
+        }
+      }
+      .CodeMirror {
+        border-top: 1px solid #888;
+        border-bottom: 1px solid #888;
+      }
+      .nav a.active {
+        color: #fff;
+        background-color: #0d6efd;
+        /* border-color: #0d6efd; */
+      }
+      body {
+        height: 100vh;
+      }
+      .fullHeight {
+        height: 100vh;
+      }
+      .oditly-color {
+        background-color: #2494fb;
+        border: none;
+      }
+      .mt-n16 {
+        margin-top: -16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="container-fluid fullHeight">
+        <!-- WARNING MESSAGE -->
+        <div id="errorMessage">
+          <div class="alert alert-danger mt-4" role="alert">
+            Error while authenticating the user.
+          </div>
+        </div>
+        <!-- BEFORE REDIRECTING -->
+
+        <div
+          id="container"
+          class="
+            py-3
+            d-flex
+            flex-column
+            justify-content-center
+            align-items-center
+            fullHeight
+          "
+        ></div>
+        <!-- AFTER REDIRECTING -->
+        <div
+          id="successTemplate"
+          class="
+            py-3
+            d-flex
+            flex-column
+            justify-content-center
+            align-items-center
+            fullHeight
+          "
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      var config = {
+        apiKey: "AIzaSyCYucMHoukJOkpNtCI-BMFrqeXYffA2xi0",
+        authDomain: "oktaintegration-322418.firebaseapp.com",
+      };
+
+      $(document).ready(function () {
+        $("#errorMessage").hide();
+        $("#container").append(`<img
+            src="/Glowing ring.gif"
+            class="figure-img img-fluid rounded"
+            alt="..."
+          />
+          <div>
+            <p class="text-center py-3 fs-5 fw-light">Loging in...</p>
+          </div>`);
+        var loggedInUser = null;
+        var redirectResult = null;
+        firebase.initializeApp(config);
+        const provider = new firebase.auth.OAuthProvider("saml.okta-saml");
+
+        firebase
+          .auth()
+          .getRedirectResult()
+          .then((result) => {
+            redirectResult = result;
+            console.log("Loging result", result);
+            if (!result.user) {
+              firebase
+                .auth()
+                .setPersistence(firebase.auth.Auth.Persistence.SESSION)
+                .then(() => {
+                  return firebase.auth().signInWithRedirect(provider);
+                })
+                .catch((error) => {
+                  // Handle Errors here.
+                  var errorCode = error.code;
+                  var errorMessage = error.message;
+                  console.error(errorMessage);
+                });
+            } else {
+              result.user
+                .getIdToken()
+                .then((idToken) => {
+                  console.log("idToken", idToken);
+                  $("#container").empty().append(`
+                    <img
+                    src="/odility.png"
+                    width="100"
+                    height="100"
+                    class="figure-img img-fluid rounded"
+                    alt="..."
+                  />
+                  <p class="text-center fw-light mt-n16">Login successful.</p>
+                    <a
+                    id="redirectLink"
+                    href="oditlysso://oauth2redirect?key=${idToken}&status=SUCCESS"
+                    class="btn btn-primary oditly-color">Return to App
+                    </a>`);
+                })
+                .catch((error) => {
+                  console.error(error);
+                });
+            }
+            // result.credential is a firebase.auth.OAuthCredential object.
+            // result.credential.providerId is equal to 'oidc.myProvider'.
+            // result.credential.idToken is the OIDC provider's ID token.
+          })
+          .catch((error) => {
+            console.error(error);
+
+            // window.location = "oktaauth://error/#121212121212";
+            // Handle error.
+          });
+      });
+    </script>
+  </body>
+</html>
