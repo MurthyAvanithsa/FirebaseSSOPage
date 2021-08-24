@@ -130,25 +130,25 @@
     </div>
 
     <script>
-      var config = {
-        apiKey: "AIzaSyCYucMHoukJOkpNtCI-BMFrqeXYffA2xi0",
-        authDomain: "oktaintegration-322418.firebaseapp.com",
+      var CONFIG = {
+        apiKey: "AIzaSyC2pRBzeIOJSAbTapvmO9gxFo5u-VmdGz4",
+        authDomain: "oditly-stage.firebaseapp.com",
       };
-
+      const PROVIDER = "saml.okta-saml-dev-02783336";
       $(document).ready(function () {
         $("#errorMessage").hide();
         $("#container").append(`<img
-            src="/Glowing ring.gif"
-            class="figure-img img-fluid rounded"
-            alt="..."
-          />
-          <div>
-            <p class="text-center py-3 fs-5 fw-light">Loging in...</p>
-          </div>`);
+                  src="/Glowing ring.gif"
+                  class="figure-img img-fluid rounded"
+                  alt="..."
+                />
+                <div>
+                  <p class="text-center py-3 fs-5 fw-light">Loging in...</p>
+                </div>`);
         var loggedInUser = null;
         var redirectResult = null;
-        firebase.initializeApp(config);
-        const provider = new firebase.auth.OAuthProvider("saml.okta-saml");
+        firebase.initializeApp(CONFIG);
+        const provider = new firebase.auth.OAuthProvider(PROVIDER);
 
         firebase
           .auth()
@@ -174,20 +174,21 @@
                 .getIdToken()
                 .then((idToken) => {
                   console.log("idToken", idToken);
+
                   $("#container").empty().append(`
-                    <img
-                    src="/odility.png"
-                    width="100"
-                    height="100"
-                    class="figure-img img-fluid rounded"
-                    alt="..."
-                  />
-                  <p class="text-center fw-light mt-n16">Login successful.</p>
-                    <a
-                    id="redirectLink"
-                    href="oditlysso://oauth2redirect?key=${idToken}&status=SUCCESS"
-                    class="btn btn-primary oditly-color">Return to App
-                    </a>`);
+                          <img
+                          src="/odility.png"
+                          width="100"
+                          height="100"
+                          class="figure-img img-fluid rounded"
+                          alt="..."
+                        />
+                        <p class="text-center fw-light mt-n16">Login successful.</p>
+                          <a
+                          id="redirectLink"
+                          href="oditlysso://oauth2redirect?key=${idToken}&status=SUCCESS&refreshToken=${result.user.refreshToken}"
+                          class="btn btn-primary oditly-color">Return to App
+                          </a>`);
                 })
                 .catch((error) => {
                   console.error(error);
